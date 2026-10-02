@@ -34,15 +34,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Caches downloaded player heads between workflow runs
-      - name: Cache Player Heads
-        uses: actions/cache@v6
-        with:
-          path: public/heads
-          key: heads-${{ hashFiles('public/data/bacaped.json') }}
-          restore-keys: |
-            heads-
-
       # Builds the app (which automatically triggers download_statics.mjs before Vite build)
       - name: Build Vite application
         run: npm run build
