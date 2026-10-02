@@ -158,9 +158,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-@import '../assets/rewards.css';
-@import '../assets/utilities.css';
-@import '../assets/global.css';
 
 .detail-drawer {
   position: absolute;
@@ -173,6 +170,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   z-index: 20;
+
+  background: var(--glass-bg, rgba(39, 39, 42, 0.45));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-left: 1px solid var(--glass-border);
 }
 
 .drawer-header {

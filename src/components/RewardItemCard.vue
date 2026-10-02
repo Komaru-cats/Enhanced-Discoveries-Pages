@@ -64,8 +64,6 @@ const enchantmentsList = computed(() => {
 </template>
 
 <style scoped>
-@import '../assets/global.css';
-@import '../assets/rewards.css';
 
 .item-card-layout {
   padding: 0.75rem 1rem;

@@ -310,7 +310,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-@import '../assets/global.css';
 .theme-modern-grey {
   --bg-main: #121214;
   --bg-gradient: linear-gradient(135deg, #18181b 0%, #0f0f11 100%);
