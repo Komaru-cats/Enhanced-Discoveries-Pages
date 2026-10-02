@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/download_statics.mjs && vue-tsc -b && vite build",
-    "sync:assets": "node scripts/download_statics.mjs",
+    "build": "node scripts/index.js && vue-tsc -b && vite build",
+    "sync:assets": "node scripts/statics_building/index.js",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
     "@vue/tsconfig": "^0.9.1",
     "esbuild": "^0.28.2",
     "minecraft-textures": "^26.3.0",
+    "skia-canvas": "^3.0.8",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vue-tsc": "^3.3.11"

@@ -15,7 +15,7 @@
           "id": "minecraft:cobblestone_stairs",
           "count": 1,
           "title": "Advancement's Stairs",
-          "description": "Shows more information about advancement\nrequirements",
+          "description": "Shows more information about advancement requirements",
           "title_color": "#B0CCD8",
           "unbreakable": false
         }
