@@ -7,7 +7,6 @@ import { RouterLink } from 'vue-router';
     <div class="dashboard-container">
       <header class="dashboard-header">
         <h1>Enhanced Discoveries</h1>
-        <p>Official documentation</p>
       </header>
 
       <!-- Centered Main Showcase Tile -->
@@ -20,7 +19,7 @@ import { RouterLink } from 'vue-router';
           <h2>Advancement Explorer</h2>
 
           <p class="tile-description">
-            Complete database of advancements added in Enhanced Discoveries.
+            Complete table of advancements added in Enhanced Discoveries.
             View actual requirements, rewards and other stuff.
           </p>
 
