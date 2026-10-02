@@ -1,0 +1,56 @@
+﻿.glass-element {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+}
+
+.badge {
+    background-color: var(--accent-bg);
+    border: 1px solid var(--glass-border);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+code {
+    background-color: var(--code-bg);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    border: 1px solid var(--glass-border);
+}
+
+.clean-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.highlight {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.text-muted {
+    color: var(--text-tertiary, #71717a);
+}
+
+.text-small {
+    font-size: 0.8rem;
+}
+
+.italic {
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Minecraft';
+    src: url('/fonts/Minecraft-Regular.otf') format('opentype');
+}
