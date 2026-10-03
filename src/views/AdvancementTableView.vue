@@ -216,7 +216,14 @@ onUnmounted(() => {
         </RouterLink>
         <h2>Advancement Table</h2>
       </div>
-      <div class="meta-info">Total advancements: <strong>{{ advancements.length }}</strong></div>
+      <div class="meta-info">
+        <template v-if="rows.length !== advancements.length">
+          Showing: <strong>{{ rows.length }}</strong> of {{ advancements.length }}
+        </template>
+        <template v-else>
+          Total: <strong>{{ advancements.length }}</strong>
+        </template>
+      </div>
     </header>
 
     <div class="table-container custom-scrollbar">
