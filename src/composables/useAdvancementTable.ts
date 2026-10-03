@@ -25,23 +25,41 @@ export const tierOptions = [
 ];
 
 /**
- * Formats advancement rewards into a readable summary string for table cell rendering.
+ * Formats advancement rewards into a readable summary string for table cell rendering
+ * by calculating the total quantity of items and trophies rather than array length.
  *
  * @param {AdvancementItem['rewards']} [rewards] The rewards payload associated with an advancement.
  * @returns {string} Comma-separated summary of the provided rewards.
+ * @throws {Error} No exceptions are thrown by this function.
+ * @example
+ * const summary = formatRewardPreview({
+ *   experience: 125,
+ *   items: [{ id: "minecraft:bell", count: 16 }],
+ *   trophies: [{ id: "minecraft:bell", count: 1, unbreakable: false }]
+ * });
+ * // Returns "+125 XP, 16 Items, 1 Trophy"
  */
 function formatRewardPreview(rewards?: AdvancementItem['rewards']): string {
     if (!rewards) return 'None';
 
     const parts: string[] = [];
+
     if (rewards.experience) {
         parts.push(`+${rewards.experience} XP`);
     }
+
     if (rewards.items?.length) {
-        parts.push(rewards.items.length === 1 ? '1 Item' : `${rewards.items.length} Items`);
+        const totalItems = rewards.items.reduce((sum, item) => sum + (item.count || 0), 0);
+        if (totalItems > 0) {
+            parts.push(totalItems === 1 ? '1 Item' : `${totalItems} Items`);
+        }
     }
+
     if (rewards.trophies?.length) {
-        parts.push(rewards.trophies.length === 1 ? '1 Trophy' : `${rewards.trophies.length} Trophies`);
+        const totalTrophies = rewards.trophies.reduce((sum, trophy) => sum + (trophy.count || 0), 0);
+        if (totalTrophies > 0) {
+            parts.push(totalTrophies === 1 ? '1 Trophy' : `${totalTrophies} Trophies`);
+        }
     }
 
     return parts.length > 0 ? parts.join(', ') : 'None';
