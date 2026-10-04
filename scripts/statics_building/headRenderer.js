@@ -14,13 +14,13 @@ import { fetchSkinBuffer } from './mojangClient.js';
  * Renders an isometric 3D representation of a Minecraft player head, including the outer helmet layer.
  *
  * @param {Buffer} skinBuffer - Raw PNG buffer of the 64x64 or 64x32 skin.
- * @param {number} [size=128] - Width and height of the resulting image in pixels.
+ * @param {number} [size=180] - Width and height of the resulting image in pixels.
  * @returns {Promise<Buffer>} Rendered PNG image buffer.
  * @throws {Error} Throws if image parsing or canvas buffer generation fails.
  * @example
  * const headPng = await renderIsometricHead(skinBuffer, 256);
  */
-export async function renderIsometricHead(skinBuffer, size = 128) {
+export async function renderIsometricHead(skinBuffer, size = 180) {
     const img = new Image();
     await new Promise((resolve, reject) => {
         img.onload = () => resolve(img);
@@ -39,7 +39,7 @@ export async function renderIsometricHead(skinBuffer, size = 128) {
 
     const cx = size / 2;
     const cy = size / 2;
-    const scale = (size / 64) * 5;
+    const scale = (size / 64) * 4.5;
 
     const rad30 = Math.PI / 6;
     const cos30 = Math.cos(rad30);
