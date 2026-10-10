@@ -1,7 +1,8 @@
 ﻿import type { RewardItem } from './reward';
 import { BacapTab, parseBacapTab } from './bacapTab';
 import { BacapTier, parseBacapTier } from './bacapTier';
-import type {PlayerHeadData} from "./playerHeadData.ts";
+import type { PlayerHeadData } from './playerHeadData.ts';
+import { ParentAdvancementItem, type ParentAdvancementItemProps } from './parentAdvancement.ts';
 
 export interface AdvancementItemProps {
     title: string;
@@ -11,7 +12,7 @@ export interface AdvancementItemProps {
     tab: string;
     frame: string;
     mc_path: string;
-    parent: string;
+    parent?: ParentAdvancementItemProps | ParentAdvancementItem | null;
     rewards?: RewardItem;
     requirements?: Record<string, string>;
     alternative_descriptions?: Record<string, string>;
@@ -23,26 +24,30 @@ export class AdvancementItem {
     public description: string;
     public frame: string;
     public mc_path: string;
-    public parent: string;
+    public parent?: ParentAdvancementItem | null;
     public icon_id: string;
     public rewards?: RewardItem;
     public requirements?: Record<string, string>;
     public alternative_descriptions?: Record<string, string>;
     public player_head_data?: PlayerHeadData;
 
+    /**
+     * Direct child advancements where current advancement is set as parent.
+     */
+    public children: AdvancementItem[] = [];
+
     private _tier!: BacapTier;
     private _tab!: BacapTab;
 
     /**
-     * Initializes a new instance of AdvancementItem and parses tier/tab values.
+     * Initializes a new instance of AdvancementItem, parses tier/tab, and wraps the parent.
      *
-     * @param props - Raw advancement properties received from JSON payload.
+     * @param props Raw advancement properties received from JSON payload.
      */
     constructor(props: AdvancementItemProps) {
         this.title = props.title;
         this.description = props.description;
         this.mc_path = props.mc_path;
-        this.parent = props.parent;
         this.frame = props.frame;
         this.rewards = props.rewards;
         this.icon_id = props.icon_id;
@@ -50,7 +55,11 @@ export class AdvancementItem {
         this.alternative_descriptions = props.alternative_descriptions;
         this.player_head_data = props.player_head_data;
 
-        // Automatically parsed into objects via setters
+        // Wrap parent props into a ParentAdvancementItem instance to enable tier/tab parsing
+        this.parent = props.parent
+            ? (props.parent instanceof ParentAdvancementItem ? props.parent : new ParentAdvancementItem(props.parent))
+            : null;
+
         this.tier = props.tier;
         this.tab = props.tab;
     }

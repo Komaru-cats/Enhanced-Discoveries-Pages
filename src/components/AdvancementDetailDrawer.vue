@@ -1,20 +1,35 @@
 ﻿<script setup lang="ts">
-import {onMounted, onUnmounted} from 'vue';
-import type {AdvancementItem} from '../types/advancement';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
+import type { AdvancementItem } from '../types/advancement';
 import AdvancementIcon from './AdvancementIcon.vue';
+import AdvancementCard from './AdvancementCard.vue';
 import RewardItemCard from './RewardItemCard.vue';
 import RewardTrophyCard from './RewardTrophyCard.vue';
 
-defineProps<{
+const props = defineProps<{
   advancement: AdvancementItem;
 }>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
+  (e: 'select', advancement: AdvancementItem): void;
 }>();
+
+const drawerContentRef = ref<HTMLElement | null>(null);
+
+// Reset scroll container to top whenever the viewed advancement changes
+watch(
+    () => props.advancement,
+    () => {
+      if (drawerContentRef.value) {
+        drawerContentRef.value.scrollTop = 0;
+      }
+    }
+);
 
 /**
  * Emits the close event when the Escape key is detected.
+ *
  * @param {KeyboardEvent} event The keyboard event payload.
  */
 function handleEscKey(event: KeyboardEvent): void {
@@ -49,11 +64,11 @@ onUnmounted(() => {
       <button class="close-btn" @click="$emit('close')" aria-label="Close">&times;</button>
     </div>
 
-    <div class="drawer-content custom-scrollbar">
+    <div ref="drawerContentRef" class="drawer-content custom-scrollbar">
       <!-- Description -->
       <div class="field-group">
         <label>Description</label>
-        <p class="description-text">{{ advancement.description }} </p>
+        <p class="description-text">{{ advancement.description }}</p>
       </div>
 
       <!-- Actual Requirements -->
@@ -151,14 +166,34 @@ onUnmounted(() => {
       <!-- Parent -->
       <div class="field-group">
         <label>Parent</label>
-        <code>{{ advancement.parent || 'None' }}</code>
+        <code v-if="!advancement.parent">None</code>
+        <AdvancementCard
+            v-else-if="advancement.parent.hasDetails"
+            :item="advancement.parent"
+        />
+        <code v-else>{{ advancement.parent.mc_path || 'None' }}</code>
+      </div>
+
+      <!-- Children -->
+      <div v-if="advancement.children.length > 0" class="field-group">
+        <label>Children ({{ advancement.children.length }})</label>
+        <div class="children-box glass-element">
+          <div class="children-list custom-scrollbar">
+            <AdvancementCard
+                v-for="child in advancement.children"
+                :key="child.mc_path"
+                :item="child"
+                clickable
+                @select="emit('select', child)"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </aside>
 </template>
 
 <style scoped>
-
 .detail-drawer {
   position: absolute;
   top: 0;
@@ -277,5 +312,22 @@ onUnmounted(() => {
   font-weight: 600;
   margin-right: 0.25rem;
   text-transform: capitalize;
+}
+
+/* Children container mimicking Rewards box nesting */
+.children-box {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--glass-border);
+}
+
+.children-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
 }
 </style>

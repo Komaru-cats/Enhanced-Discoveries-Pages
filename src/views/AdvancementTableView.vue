@@ -131,6 +131,7 @@ onMounted(() => {
           v-if="selectedAdvancement"
           :advancement="selectedAdvancement"
           @close="closeDetails"
+          @select="selectedAdvancement = $event"
       />
     </Transition>
   </div>

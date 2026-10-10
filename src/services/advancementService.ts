@@ -1,10 +1,39 @@
-﻿import {AdvancementItem, type AdvancementItemProps} from '../types/advancement';
+﻿import { AdvancementItem, type AdvancementItemProps } from '../types/advancement';
 
 /**
- * Loads advancement collection from the static public JSON file.
+ * Builds bidirectional child links by matching parent mc_path with advancements.
  *
- * @returns {Promise<AdvancementItem[]>} Array of typed advancement items.
- * @throws {Error} Throws when the network request fails.
+ * @param {AdvancementItem[]} items Flat array of parsed advancement items.
+ * @returns {void}
+ *
+ * @example
+ * linkAdvancementChildren(advancementList);
+ */
+function linkAdvancementChildren(items: AdvancementItem[]): void {
+    const pathLookup = new Map<string, AdvancementItem>();
+
+    // Index all advancements by their Minecraft resource path
+    for (const item of items) {
+        pathLookup.set(item.mc_path, item);
+    }
+
+    // Register each item in its parent's children array
+    for (const item of items) {
+        const parentPath = item.parent?.mc_path;
+        if (parentPath) {
+            const parentNode = pathLookup.get(parentPath);
+            if (parentNode) {
+                parentNode.children.push(item);
+            }
+        }
+    }
+}
+
+/**
+ * Loads advancement collection from the static public JSON file and constructs hierarchy.
+ *
+ * @returns {Promise<AdvancementItem[]>} Array of typed advancement items with populated children.
+ * @throws {Error} Throws when the network request fails or data cannot be parsed.
  *
  * @example
  * const items = await loadAdvancements();
@@ -18,6 +47,11 @@ export async function loadAdvancements(): Promise<AdvancementItem[]> {
 
     const rawData: AdvancementItemProps[] = await response.json();
 
-    // Instantiate classes so that setters (tab, tier) and private fields are initialized
-    return rawData.map((item) => new AdvancementItem(item));
+    // Instantiate classes so setters (tab, tier) and parent wrappers are initialized
+    const items = rawData.map((item) => new AdvancementItem(item));
+
+    //  Link child references across the dataset
+    linkAdvancementChildren(items);
+
+    return items;
 }
