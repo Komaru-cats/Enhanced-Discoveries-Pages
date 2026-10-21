@@ -152,4 +152,11 @@ defineProps<{
   padding-left: 3.5rem;
   margin-top: 0.25rem;
 }
+
+@media (max-width: 640px) {
+  .trophy-description,
+  .badges-container {
+    padding-left: 0;
+  }
+}
 </style>

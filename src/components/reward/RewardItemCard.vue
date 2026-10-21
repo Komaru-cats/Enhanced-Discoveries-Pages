@@ -124,4 +124,10 @@ defineProps<{
 .custom-name {
   color: #fbbf24;
 }
+
+@media (max-width: 640px) {
+  .item-detail-row {
+    padding-left: 0;
+  }
+}
 </style>

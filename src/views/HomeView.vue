@@ -174,4 +174,22 @@ import { RouterLink } from 'vue-router';
   border-radius: 50%;
   opacity: 0.7;
 }
+
+@media (max-width: 640px) {
+  .dashboard-page {
+    padding: 2rem 1rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+
+  .main-tile-card {
+    padding: 1.5rem;
+  }
+
+  .main-tile-card h2 {
+    font-size: 1.4rem;
+  }
+}
 </style>

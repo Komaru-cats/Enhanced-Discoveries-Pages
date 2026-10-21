@@ -252,7 +252,7 @@ const { table, rows } = useAdvancementTable(advancements);
 .fullscreen-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   background: var(--bg-gradient-table);
   color: var(--text-primary);
@@ -308,6 +308,8 @@ const { table, rows } = useAdvancementTable(advancements);
   padding: 0.4rem 1rem;
   border-radius: 20px;
   border: 1px solid var(--glass-border);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .table-container {
@@ -318,6 +320,7 @@ const { table, rows } = useAdvancementTable(advancements);
 
 .data-table {
   width: 100%;
+  min-width: 1400px;
   display: block;
   text-align: left;
   font-size: 0.95rem;
@@ -349,7 +352,7 @@ const { table, rows } = useAdvancementTable(advancements);
   padding: 0.9rem 1.25rem;
   border-bottom: 1px solid var(--glass-border);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .data-table tbody {
@@ -448,5 +451,31 @@ const { table, rows } = useAdvancementTable(advancements);
 .slide-enter-from,
 .slide-leave-to {
   transform: translateX(100%);
+}
+
+@media (max-width: 768px) {
+  .table-navbar {
+    padding: 0.85rem 1rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-left {
+    gap: 0.85rem;
+  }
+
+  .nav-left h2 {
+    font-size: 1.05rem;
+  }
+
+  .meta-info {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.75rem;
+  }
+
+  .table-container {
+    padding: 0 0.75rem 1rem 0.75rem;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 </style>

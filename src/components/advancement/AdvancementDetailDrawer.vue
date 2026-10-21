@@ -193,6 +193,7 @@ useClickOutside(null, () => emit('close'));
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   padding: 1.25rem 2rem;
   border-bottom: 1px solid var(--glass-border);
 }
@@ -201,6 +202,7 @@ useClickOutside(null, () => emit('close'));
   display: flex;
   align-items: center;
   gap: 1.15rem;
+  min-width: 0;
 }
 
 .drawer-header h3 {
@@ -211,6 +213,7 @@ useClickOutside(null, () => emit('close'));
   margin: 0;
   color: var(--text-primary);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  overflow-wrap: break-word;
 }
 
 .close-btn {
@@ -219,6 +222,7 @@ useClickOutside(null, () => emit('close'));
   border-radius: 50%;
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,5 +309,24 @@ useClickOutside(null, () => emit('close'));
   max-height: 380px;
   overflow-y: auto;
   padding-right: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .drawer-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .drawer-title-group {
+    gap: 0.75rem;
+  }
+
+  .drawer-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .drawer-content {
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
 }
 </style>

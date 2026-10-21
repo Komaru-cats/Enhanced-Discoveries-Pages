@@ -135,6 +135,7 @@ function handleClick(): void {
 .card-path {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   font-size: 0.85rem;
 }
