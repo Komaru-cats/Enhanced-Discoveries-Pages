@@ -1,4 +1,6 @@
-﻿import { sleep } from './utils.js';
+import { sleep } from './utils.js';
+
+const REQUEST_TIMEOUT_MS = 10_000;
 
 /**
  * Fetches a raw player skin PNG buffer using Mojang Session API (by UUID) or CDN (by hash).
@@ -20,7 +22,9 @@ export async function fetchSkinBuffer(identifier, maxRetries = 3) {
             if (isUuid) {
                 const cleanUuid = identifier.replace(/-/g, '');
                 const profileUrl = `https://sessionserver.mojang.com/session/minecraft/profile/${cleanUuid}`;
-                const profileRes = await fetch(profileUrl);
+                const profileRes = await fetch(profileUrl, {
+                    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+                });
 
                 if (profileRes.status === 429) {
                     const waitMs = (attempt + 1) * 2000;
@@ -49,7 +53,9 @@ export async function fetchSkinBuffer(identifier, maxRetries = 3) {
                 skinUrl = `https://textures.minecraft.net/texture/${identifier}`;
             }
 
-            const skinRes = await fetch(skinUrl);
+            const skinRes = await fetch(skinUrl, {
+                signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+            });
             if (!skinRes.ok) {
                 throw new Error(`Failed to fetch skin texture: HTTP ${skinRes.status}`);
             }

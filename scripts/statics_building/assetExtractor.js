@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Result structure containing extracted asset identifiers.
  *
  * @typedef {Object} ExtractedAssets
@@ -7,60 +7,62 @@
  */
 
 /**
- * Recursively scans arbitrary JSON data to discover player heads and item IDs,
- * including nested advancement parents and rewards.
+ * Registers a single asset into the heads set (if head data is present) or the items set.
  *
- * @param {unknown} data - Parsed JSON object or array to traverse.
+ * @param {string | undefined | null} itemId - Minecraft item identifier (e.g., "minecraft:bell").
+ * @param {{ texture_hash?: string | null, uuid?: string | null } | undefined | null} headData - Optional player head metadata.
+ * @param {Set<string>} heads - Set accumulating unique head identifiers.
+ * @param {Set<string>} items - Set accumulating unique item IDs.
+ * @returns {void}
+ */
+function addAsset(itemId, headData, heads, items) {
+    const headIdentifier = headData?.texture_hash?.trim() || headData?.uuid?.trim();
+    if (headIdentifier) {
+        heads.add(headIdentifier);
+        return;
+    }
+
+    const cleanItemId = itemId?.trim();
+    if (cleanItemId) {
+        items.add(cleanItemId);
+    }
+}
+
+/**
+ * Scans the advancement dataset to discover unique player heads and item IDs
+ * across advancements, parents, item rewards, and trophies.
+ *
+ * @param {Array<Record<string, any>>} data - Parsed JSON array of advancements from bacaped.json.
  * @returns {ExtractedAssets} Collections of discovered unique head identifiers and item IDs.
- *
+ * @throws {TypeError} Throws if the input data is not an array.
  * @example
- * const { heads, items } = extractAssets(data);
+ * const { heads, items } = extractAssets(rawData);
  */
 export function extractAssets(data) {
+    if (!Array.isArray(data)) {
+        throw new TypeError('Expected bacaped.json root data to be an array.');
+    }
+
     const heads = new Set();
     const items = new Set();
 
-    /**
-     * Traverses arbitrary data tree extracting head hashes and item IDs.
-     *
-     * @param {unknown} node - Node to inspect and recursively traverse.
-     */
-    function traverse(node) {
-        if (!node || typeof node !== 'object') return;
+    for (const advancement of data) {
+        if (!advancement || typeof advancement !== 'object') continue;
 
-        if (Array.isArray(node)) {
-            for (const item of node) traverse(item);
-            return;
+        addAsset(advancement.icon_id, advancement.player_head_data, heads, items);
+
+        if (advancement.parent) {
+            addAsset(advancement.parent.icon_id, advancement.parent.player_head_data, heads, items);
         }
 
-        const headData = node.player_head_data;
-        let hasHead = false;
-
-        // Extract custom head texture hash or player UUID
-        if (headData && typeof headData === 'object') {
-            const identifier = headData.texture_hash || headData.uuid;
-            if (typeof identifier === 'string' && identifier.trim().length > 0) {
-                heads.add(identifier.trim());
-                hasHead = true;
-            }
+        for (const item of advancement.rewards?.items ?? []) {
+            addAsset(item.id, item.player_head_data, heads, items);
         }
 
-        // Fallback to standard item icon if no head is present
-        if (!hasHead) {
-            const rawId = node.icon_id || node.id;
-            if (typeof rawId === 'string' && rawId.trim().length > 0) {
-                items.add(rawId.trim());
-            }
-        }
-
-        // Recursively inspect nested objects (including 'parent', 'rewards', etc.)
-        for (const [key, value] of Object.entries(node)) {
-            if (key !== 'player_head_data') {
-                traverse(value);
-            }
+        for (const trophy of advancement.rewards?.trophies ?? []) {
+            addAsset(trophy.id, trophy.player_head_data, heads, items);
         }
     }
 
-    traverse(data);
     return { heads, items };
 }

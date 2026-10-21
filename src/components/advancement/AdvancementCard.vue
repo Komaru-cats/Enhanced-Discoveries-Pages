@@ -1,27 +1,27 @@
-﻿<script setup lang="ts">
-import AdvancementIcon from './AdvancementIcon.vue';
-import type { AdvancementItem } from '../types/advancement';
-import type { ParentAdvancementItem } from '../types/parentAdvancement';
+<script setup lang="ts">
+import type {
+  AdvancementItem,
+  ParentAdvancementItem,
+} from '../../domain/advancement/models';
+import BaseBadge from '../ui/BaseBadge.vue';
+import AdvancementFrameIcon from './AdvancementFrameIcon.vue';
 
 const props = withDefaults(
-    defineProps<{
-      item: AdvancementItem | ParentAdvancementItem;
-      clickable?: boolean;
-    }>(),
-    {
-      clickable: false,
-    }
+  defineProps<{
+    item: AdvancementItem | ParentAdvancementItem;
+    clickable?: boolean;
+  }>(),
+  {
+    clickable: false,
+  }
 );
 
 const emit = defineEmits<{
-  /**
-   * Emitted when user clicks on a clickable card.
-   */
   (e: 'select'): void;
 }>();
 
 /**
- * Handles card click event and notifies the parent drawer if interaction is enabled.
+ * Emits the select event when the card is interactive and clicked by the user.
  *
  * @returns {void}
  */
@@ -34,32 +34,27 @@ function handleClick(): void {
 
 <template>
   <div
-      class="advancement-card glass-element"
-      :class="{ 'is-clickable': clickable }"
-      @click="handleClick"
+    class="advancement-card glass-element"
+    :class="{ 'is-clickable': clickable }"
+    @click="handleClick"
   >
     <div class="card-header">
-      <AdvancementIcon
-          :icon-id="item.icon_id || ''"
-          :player-head-data="item.player_head_data"
-          :frame="item.frame || 'task'"
-          :title="item.title || ''"
-          size="sm"
+      <AdvancementFrameIcon
+        :icon-id="item.icon_id || ''"
+        :player-head-data="item.player_head_data"
+        :frame="item.frame || 'task'"
+        :title="item.title || ''"
+        size="sm"
       />
       <div class="card-header-info">
         <h4>{{ item.title || item.mc_path }}</h4>
         <div class="card-badges">
-          <span
-              v-if="item.tier"
-              class="badge badge-sm"
-              :style="{
-              color: item.tier.color,
-              borderColor: item.tier.color,
-              backgroundColor: `${item.tier.color}1A`,
-            }"
-          >
-            {{ item.tier.display_name }}
-          </span>
+          <BaseBadge
+            v-if="item.tier"
+            :label="item.tier.display_name"
+            :color="item.tier.color"
+            size="sm"
+          />
         </div>
       </div>
     </div>
@@ -127,11 +122,6 @@ function handleClick(): void {
   align-items: center;
   gap: 0.4rem;
   flex-wrap: wrap;
-}
-
-.badge-sm {
-  font-size: 0.75rem;
-  padding: 0.15rem 0.5rem;
 }
 
 .card-description {

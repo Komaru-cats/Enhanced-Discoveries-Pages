@@ -1,0 +1,31 @@
+@font-face {
+  font-family: 'Minecraft';
+  src: url('../fonts/Minecraft-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg-main: #121214;
+  --bg-gradient-table: linear-gradient(135deg, #18181b 0%, #0f0f11 100%);
+  --bg-gradient-dashboard: radial-gradient(circle at top, #1e1e24 0%, #101012 70%);
+
+  --glass-bg: rgba(39, 39, 42, 0.45);
+  --glass-bg-elevated: rgba(30, 30, 34, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  --text-muted: #71717a;
+
+  --accent-color: #d4d4d8;
+  --accent-bg: rgba(212, 212, 216, 0.1);
+  --accent-active: rgba(212, 212, 216, 0.15);
+
+  --code-bg: rgba(0, 0, 0, 0.3);
+  --row-hover: rgba(255, 255, 255, 0.03);
+  --row-active: rgba(255, 255, 255, 0.07);
+}

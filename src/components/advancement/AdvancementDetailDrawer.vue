@@ -1,10 +1,11 @@
-﻿<script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue';
-import type { AdvancementItem } from '../types/advancement';
-import AdvancementIcon from './AdvancementIcon.vue';
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import type { AdvancementItem } from '../../domain/advancement/models';
+import { useClickOutside } from '../../composables/useClickOutside';
+import BaseBadge from '../ui/BaseBadge.vue';
+import RewardSection from '../reward/RewardSection.vue';
+import AdvancementFrameIcon from './AdvancementFrameIcon.vue';
 import AdvancementCard from './AdvancementCard.vue';
-import RewardItemCard from './RewardItemCard.vue';
-import RewardTrophyCard from './RewardTrophyCard.vue';
 
 const props = defineProps<{
   advancement: AdvancementItem;
@@ -17,51 +18,35 @@ const emit = defineEmits<{
 
 const drawerContentRef = ref<HTMLElement | null>(null);
 
-// Reset scroll container to top whenever the viewed advancement changes
+// Reset scroll position to top whenever the selected advancement changes
 watch(
-    () => props.advancement,
-    () => {
-      if (drawerContentRef.value) {
-        drawerContentRef.value.scrollTop = 0;
-      }
+  () => props.advancement,
+  () => {
+    if (drawerContentRef.value) {
+      drawerContentRef.value.scrollTop = 0;
     }
+  }
 );
 
-/**
- * Emits the close event when the Escape key is detected.
- *
- * @param {KeyboardEvent} event The keyboard event payload.
- */
-function handleEscKey(event: KeyboardEvent): void {
-  if (event.key === 'Escape') {
-    emit('close');
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('keydown', handleEscKey);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('keydown', handleEscKey);
-});
+// Close the drawer when Escape is pressed
+useClickOutside(null, () => emit('close'));
 </script>
 
 <template>
   <aside class="detail-drawer glass-panel">
     <div class="drawer-header">
       <div class="drawer-title-group">
-        <AdvancementIcon
-            :icon-id="advancement.icon_id"
-            :player-head-data="advancement.player_head_data"
-            :frame="(advancement as any).frame || 'task'"
-            :title="advancement.title"
-            size="md"
+        <AdvancementFrameIcon
+          :icon-id="advancement.icon_id"
+          :player-head-data="advancement.player_head_data"
+          :frame="advancement.frame"
+          :title="advancement.title"
+          size="md"
         />
         <h3>{{ advancement.title }}</h3>
       </div>
 
-      <button class="close-btn" @click="$emit('close')" aria-label="Close">&times;</button>
+      <button class="close-btn" aria-label="Close" @click="emit('close')">&times;</button>
     </div>
 
     <div ref="drawerContentRef" class="drawer-content custom-scrollbar">
@@ -71,13 +56,44 @@ onUnmounted(() => {
         <p class="description-text">{{ advancement.description }}</p>
       </div>
 
-      <!-- Actual Requirements -->
-      <div v-if="advancement.requirements && Object.keys(advancement.requirements).length > 0" class="field-group">
-        <label>Requirements</label>
-
+      <!-- Alternative Descriptions (e.g., Hardcore mode) -->
+      <div
+        v-if="
+          advancement.alternative_descriptions &&
+          Object.keys(advancement.alternative_descriptions).length > 0
+        "
+        class="field-group"
+      >
+        <label>Alternative Descriptions</label>
         <div class="requirements-container">
-          <template v-for="(criterion, name, index) in advancement.requirements" :key="name">
-            <hr v-if="index > 0" class="micro-divider"/>
+          <template
+            v-for="(altDesc, mode, index) in advancement.alternative_descriptions"
+            :key="mode"
+          >
+            <hr v-if="index > 0" class="micro-divider" />
+            <div class="requirement-text">
+              <span class="req-key">{{ mode }}:</span>
+              <span>{{ altDesc }}</span>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Actual Requirements -->
+      <div
+        v-if="
+          advancement.requirements &&
+          Object.keys(advancement.requirements).length > 0
+        "
+        class="field-group"
+      >
+        <label>Requirements</label>
+        <div class="requirements-container">
+          <template
+            v-for="(criterion, name, index) in advancement.requirements"
+            :key="name"
+          >
+            <hr v-if="index > 0" class="micro-divider" />
             <div v-if="name === 'default'" class="requirement-text">
               {{ criterion }}
             </div>
@@ -92,51 +108,17 @@ onUnmounted(() => {
       <!-- Rewards -->
       <div class="field-group">
         <label>Rewards</label>
-        <div v-if="advancement.rewards" class="reward-box glass-element">
-          <div v-if="advancement.rewards.experience" class="reward-item">
-            <span class="reward-label">Experience:</span>
-            <span class="reward-value">+{{ advancement.rewards.experience }} XP</span>
-          </div>
-
-          <div v-if="advancement.rewards.items?.length" class="reward-item">
-            <span class="reward-label">Items:</span>
-            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
-              <RewardItemCard
-                  v-for="item in advancement.rewards.items"
-                  :key="item.id"
-                  :item="item"
-              />
-            </div>
-          </div>
-
-          <div v-if="advancement.rewards.trophies?.length" class="reward-item">
-            <span class="reward-label">Trophies:</span>
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.25rem;">
-              <RewardTrophyCard
-                  v-for="trophy in advancement.rewards.trophies"
-                  :key="trophy.id"
-                  :trophy="trophy"
-              />
-            </div>
-          </div>
-        </div>
-        <p v-else class="text-muted italic">No rewards specified.</p>
+        <RewardSection :rewards="advancement.rewards" />
       </div>
 
       <!-- Tier -->
       <div class="field-group">
         <label>Tier</label>
         <div>
-          <span
-              class="badge"
-              :style="{
-              color: advancement.tier.color,
-              borderColor: advancement.tier.color,
-              backgroundColor: `${advancement.tier.color}1A`,
-            }"
-          >
-            {{ advancement.tier.display_name }}
-          </span>
+          <BaseBadge
+            :label="advancement.tier.display_name"
+            :color="advancement.tier.color"
+          />
         </div>
       </div>
 
@@ -144,16 +126,10 @@ onUnmounted(() => {
       <div class="field-group">
         <label>Tab</label>
         <div>
-          <span
-              class="badge"
-              :style="{
-              color: advancement.tab.color,
-              borderColor: advancement.tab.color,
-              backgroundColor: `${advancement.tab.color}1A`,
-            }"
-          >
-            {{ advancement.tab.display_name }}
-          </span>
+          <BaseBadge
+            :label="advancement.tab.display_name"
+            :color="advancement.tab.color"
+          />
         </div>
       </div>
 
@@ -168,8 +144,13 @@ onUnmounted(() => {
         <label>Parent</label>
         <code v-if="!advancement.parent">None</code>
         <AdvancementCard
-            v-else-if="advancement.parent.hasDetails"
-            :item="advancement.parent"
+          v-else-if="advancement.parent.hasDetails"
+          :item="advancement.parentAdvancement ?? advancement.parent"
+          :clickable="Boolean(advancement.parentAdvancement)"
+          @select="
+            advancement.parentAdvancement &&
+              emit('select', advancement.parentAdvancement)
+          "
         />
         <code v-else>{{ advancement.parent.mc_path || 'None' }}</code>
       </div>
@@ -180,11 +161,11 @@ onUnmounted(() => {
         <div class="children-box glass-element">
           <div class="children-list custom-scrollbar">
             <AdvancementCard
-                v-for="child in advancement.children"
-                :key="child.mc_path"
-                :item="child"
-                clickable
-                @select="emit('select', child)"
+              v-for="child in advancement.children"
+              :key="child.mc_path"
+              :item="child"
+              clickable
+              @select="emit('select', child)"
             />
           </div>
         </div>
@@ -205,10 +186,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   z-index: 20;
-
-  background: var(--glass-bg, rgba(39, 39, 42, 0.45));
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border-left: 1px solid var(--glass-border);
 }
 
@@ -314,7 +291,6 @@ onUnmounted(() => {
   text-transform: capitalize;
 }
 
-/* Children container mimicking Rewards box nesting */
 .children-box {
   padding: 0.75rem;
   border-radius: 8px;
