@@ -14,6 +14,8 @@
  * @param {Set<string>} heads - Set accumulating unique head identifiers.
  * @param {Set<string>} items - Set accumulating unique item IDs.
  * @returns {void}
+ * @example
+ * addAsset('minecraft:player_head', { texture_hash: 'abc123...' }, headsSet, itemsSet);
  */
 function addAsset(itemId, headData, heads, items) {
     const headIdentifier = headData?.texture_hash?.trim() || headData?.uuid?.trim();
@@ -29,22 +31,21 @@ function addAsset(itemId, headData, heads, items) {
 }
 
 /**
- * Scans the advancement dataset to discover unique player heads and item IDs
+ * Scans an advancement dataset array to discover unique player heads and item IDs
  * across advancements, parents, item rewards, and trophies.
  *
- * @param {Array<Record<string, any>>} data - Parsed JSON array of advancements from bacaped.json.
+ * @param {Array<Record<string, any>>} data - Parsed JSON array of advancements.
+ * @param {Set<string>} [heads=new Set()] - Optional accumulator Set for player head identifiers.
+ * @param {Set<string>} [items=new Set()] - Optional accumulator Set for item resource IDs.
  * @returns {ExtractedAssets} Collections of discovered unique head identifiers and item IDs.
  * @throws {TypeError} Throws if the input data is not an array.
  * @example
  * const { heads, items } = extractAssets(rawData);
  */
-export function extractAssets(data) {
+export function extractAssets(data, heads = new Set(), items = new Set()) {
     if (!Array.isArray(data)) {
-        throw new TypeError('Expected bacaped.json root data to be an array.');
+        throw new TypeError('Expected dataset root data to be an array.');
     }
-
-    const heads = new Set();
-    const items = new Set();
 
     for (const advancement of data) {
         if (!advancement || typeof advancement !== 'object') continue;
