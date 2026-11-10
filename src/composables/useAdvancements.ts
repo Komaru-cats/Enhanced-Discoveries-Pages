@@ -1,70 +1,113 @@
-import { onMounted, ref, shallowRef, type Ref, type ShallowRef } from 'vue';
+import { ref } from 'vue';
 import type { AdvancementItem } from '../domain/advancement/models';
-import { loadAdvancements } from '../services/advancementService';
+import { fetchDatasetVersions } from '../services/versionedDataService';
+import { getAdvancementsByVersion } from '../services/advancementService';
 
-export interface UseAdvancementsReturn {
-  advancements: ShallowRef<AdvancementItem[]>;
-  selectedAdvancement: ShallowRef<AdvancementItem | null>;
-  isLoading: Ref<boolean>;
-  errorMessage: Ref<string | null>;
-  fetchAdvancements: (forceReload?: boolean) => Promise<void>;
-  selectAdvancement: (advancement: AdvancementItem | null) => void;
-}
+const BACAPED_DATASET_KEY = 'bacaped_versions';
 
-/**
- * Composable managing advancement data fetching, loading/error states, and active item selection.
- *
- * @returns {UseAdvancementsReturn} Reactive state and action handlers for advancements.
- * @example
- * const { advancements, isLoading, errorMessage, selectAdvancement } = useAdvancements();
- */
-export function useAdvancements(): UseAdvancementsReturn {
-  const advancements = shallowRef<AdvancementItem[]>([]);
-  const selectedAdvancement = shallowRef<AdvancementItem | null>(null);
-  const isLoading = ref<boolean>(true);
-  const errorMessage = ref<string | null>(null);
+const advancements = ref<AdvancementItem[]>([]);
+const availableVersions = ref<string[]>([]);
+const currentVersion = ref<string>('');
+const selectedAdvancement = ref<AdvancementItem | null>(null);
+const isLoading = ref<boolean>(false);
+const errorMessage = ref<string | null>(null);
 
+export function useAdvancements() {
   /**
-   * Fetches advancements from the service layer and updates reactive status flags.
+   * Loads available versions (if not loaded yet) and fetches advancements
+   * for the active or requested version.
    *
-   * @param {boolean} [forceReload=false] - Whether to bypass the service cache.
+   * @param {boolean} [force=false] - If true, bypasses cache and re-fetches data.
+   * @param {string} [preferredVersion] - Optional version string from URL query (?v=...).
    * @returns {Promise<void>}
+   * @example
+   * await fetchAdvancements(false, '2.9.4');
    */
-  async function fetchAdvancements(forceReload = false): Promise<void> {
-    isLoading.value = true;
-    errorMessage.value = null;
-
+  async function fetchAdvancements(
+      force: boolean = false,
+      preferredVersion?: string
+  ): Promise<void> {
     try {
-      advancements.value = await loadAdvancements(forceReload);
-    } catch (error) {
-      console.error('Error fetching advancement data:', error);
+      isLoading.value = true;
+      errorMessage.value = null;
+
+      if (availableVersions.value.length === 0 || force) {
+        availableVersions.value = await fetchDatasetVersions(BACAPED_DATASET_KEY, force);
+      }
+
+      const targetVersion =
+          preferredVersion && availableVersions.value.includes(preferredVersion)
+              ? preferredVersion
+              : currentVersion.value && availableVersions.value.includes(currentVersion.value)
+                  ? currentVersion.value
+                  : availableVersions.value[0];
+
+      if (!targetVersion) {
+        throw new Error('No available versions found');
+      }
+
+      currentVersion.value = targetVersion;
+      advancements.value = await getAdvancementsByVersion(targetVersion, force);
+
+      // Sync opened drawer with the newly loaded version dataset
+      if (selectedAdvancement.value) {
+        const currentPath = selectedAdvancement.value.mc_path;
+        selectedAdvancement.value =
+            advancements.value.find((a) => a.mc_path === currentPath) ?? null;
+      }
+    } catch (err) {
       errorMessage.value =
-        error instanceof Error ? error.message : 'Failed to load advancement data.';
+          err instanceof Error ? err.message : 'Failed to load advancements';
     } finally {
       isLoading.value = false;
     }
   }
 
   /**
-   * Sets or clears the currently active advancement for the detail drawer.
+   * Switches the active version and reloads advancements.
    *
-   * @param {AdvancementItem | null} advancement - Target advancement or null to close.
-   * @returns {void}
+   * @param {string} version - Target SemVer version string.
+   * @returns {Promise<void>}
+   * @example
+   * await changeVersion('3.0.0');
    */
-  function selectAdvancement(advancement: AdvancementItem | null): void {
-    selectedAdvancement.value = advancement;
+  async function changeVersion(version: string): Promise<void> {
+    if (version === currentVersion.value && advancements.value.length > 0) {
+      return;
+    }
+    await fetchAdvancements(false, version);
   }
 
-  onMounted(() => {
-    void fetchAdvancements();
-  });
+  /**
+   * Selects an advancement for the detail drawer by object, mc_path, or clears selection.
+   *
+   * @param {AdvancementItem | string | null} target - AdvancementItem instance, mc_path string, or null.
+   * @returns {void}
+   * @example
+   * selectAdvancement('blazeandcave:bacap/root');
+   */
+  function selectAdvancement(target: AdvancementItem | string | null): void {
+    if (!target) {
+      selectedAdvancement.value = null;
+      return;
+    }
+    if (typeof target === 'string') {
+      selectedAdvancement.value =
+          advancements.value.find((a) => a.mc_path === target) ?? null;
+      return;
+    }
+    selectedAdvancement.value = target;
+  }
 
   return {
     advancements,
+    availableVersions,
+    currentVersion,
     selectedAdvancement,
     isLoading,
     errorMessage,
     fetchAdvancements,
+    changeVersion,
     selectAdvancement,
   };
 }

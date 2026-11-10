@@ -1,7 +1,9 @@
 import { AdvancementItem } from '../domain/advancement/models';
 import type { AdvancementDto } from '../domain/advancement/types';
+import { fetchVersionedJson } from './versionedDataService';
 
-let cachedAdvancements: AdvancementItem[] | null = null;
+const DATASET_KEY = 'bacaped_versions';
+const cachedAdvancementsByVersion = new Map<string, AdvancementItem[]>();
 
 /**
  * Builds bidirectional parent-child links across the advancement graph by matching mc_path.
@@ -31,32 +33,33 @@ function linkAdvancementHierarchy(items: AdvancementItem[]): void {
 }
 
 /**
- * Loads the advancement dataset from the static JSON file, constructs domain models,
- * links parent-child hierarchies, and caches the result in memory.
+ * Loads the advancement dataset for a specific version, constructs domain models,
+ * links parent-child hierarchies, and caches the resulting graph per version.
  *
+ * @param {string} version - Target SemVer version string (e.g. "3.0.0").
  * @param {boolean} [forceReload=false] - When true, bypasses the in-memory cache.
  * @returns {Promise<AdvancementItem[]>} Resolved list of AdvancementItem instances.
  * @throws {Error} Throws when the HTTP request fails or returns a non-2xx status code.
  * @example
- * const items = await loadAdvancements();
+ * const items = await getAdvancementsByVersion('3.0.0');
  */
-export async function loadAdvancements(forceReload = false): Promise<AdvancementItem[]> {
-  if (cachedAdvancements && !forceReload) {
-    return cachedAdvancements;
+export async function getAdvancementsByVersion(
+    version: string,
+    forceReload: boolean = false
+): Promise<AdvancementItem[]> {
+  if (!forceReload && cachedAdvancementsByVersion.has(version)) {
+    return cachedAdvancementsByVersion.get(version)!;
   }
 
-  const dataUrl = `${import.meta.env.BASE_URL}data/bacaped.json`;
-  const response = await fetch(dataUrl);
+  const rawData = await fetchVersionedJson<AdvancementDto[]>(
+      DATASET_KEY,
+      version,
+      forceReload
+  );
 
-  if (!response.ok) {
-    throw new Error(`Failed to load ${dataUrl}: ${response.status} ${response.statusText}`);
-  }
-
-  const rawData: AdvancementDto[] = await response.json();
   const items = rawData.map((dto) => new AdvancementItem(dto));
-
   linkAdvancementHierarchy(items);
-  cachedAdvancements = items;
 
+  cachedAdvancementsByVersion.set(version, items);
   return items;
 }

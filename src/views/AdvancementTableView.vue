@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router';
+import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { FlexRender } from '@tanstack/vue-table';
 import {
   TAB_FILTER_OPTIONS,
@@ -8,46 +9,74 @@ import {
 import { useAdvancements } from '../composables/useAdvancements';
 import { useAdvancementTable } from '../composables/useAdvancementTable';
 import BaseMultiSelect from '../components/ui/BaseMultiSelect.vue';
+import BaseVersionSelect from '../components/ui/BaseVersionSelect.vue';
 import AdvancementDetailDrawer from '../components/advancement/AdvancementDetailDrawer.vue';
+
+const route = useRoute();
+const router = useRouter();
 
 const {
   advancements,
+  availableVersions,
+  currentVersion,
   selectedAdvancement,
   isLoading,
   errorMessage,
   fetchAdvancements,
+  changeVersion,
   selectAdvancement,
 } = useAdvancements();
 
 const { table, rows } = useAdvancementTable(advancements);
+
+onMounted(async () => {
+  const queryVersion =
+      typeof route.query.v === 'string' ? route.query.v : undefined;
+  await fetchAdvancements(false, queryVersion);
+});
+
+/**
+ * Handles version selection from the navbar dropdown and updates URL query.
+ *
+ * @param newVersion - Newly selected SemVer version string
+ */
+async function handleVersionChange(newVersion: string): Promise<void> {
+  await changeVersion(newVersion);
+  router.replace({
+    query: {
+      ...route.query,
+      v: newVersion,
+    },
+  });
+}
 </script>
 
 <template>
   <div class="fullscreen-page">
-    <header class="table-navbar glass-panel">
+    <nav class="table-navbar">
       <div class="nav-left">
-        <RouterLink to="/" class="back-link">
-          <span class="icon">&larr;</span> Dashboard
-        </RouterLink>
+        <router-link to="/" class="back-link">← Back</router-link>
         <h2>Advancement Table</h2>
+        <BaseVersionSelect
+            :model-value="currentVersion"
+            :versions="availableVersions"
+            :disabled="isLoading"
+            @update:model-value="handleVersionChange"
+        />
       </div>
+
       <div class="meta-info">
-        <template v-if="rows.length !== advancements.length">
-          Showing: <strong>{{ rows.length }}</strong> of {{ advancements.length }}
-        </template>
-        <template v-else>
-          Total: <strong>{{ advancements.length }}</strong>
-        </template>
+        Showing {{ rows.length }} of {{ advancements.length }}
       </div>
-    </header>
+    </nav>
 
     <div class="table-container custom-scrollbar">
       <table class="data-table">
         <thead>
-          <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-            <th v-for="header in headerGroup.headers" :key="header.id">
-              <div v-if="!header.isPlaceholder" class="header-content">
-                <div
+        <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+          <th v-for="header in headerGroup.headers" :key="header.id">
+            <div v-if="!header.isPlaceholder" class="header-content">
+              <div
                   class="header-title"
                   :class="{ 'is-sortable': header.column.getCanSort() }"
                   @click="
@@ -55,31 +84,31 @@ const { table, rows } = useAdvancementTable(advancements);
                       ? header.column.toggleSorting()
                       : null
                   "
-                >
-                  <FlexRender :header="header" :props="header.getContext()" />
-                  <span v-if="header.column.getCanSort()" class="sort-icon">
+              >
+                <FlexRender :header="header" :props="header.getContext()" />
+                <span v-if="header.column.getCanSort()" class="sort-icon">
                     <span
-                      v-if="header.column.getIsSorted() === 'asc'"
-                      class="active"
-                      >↑</span
+                        v-if="header.column.getIsSorted() === 'asc'"
+                        class="active"
+                    >↑</span
                     >
                     <span
-                      v-else-if="header.column.getIsSorted() === 'desc'"
-                      class="active"
-                      >↓</span
+                        v-else-if="header.column.getIsSorted() === 'desc'"
+                        class="active"
+                    >↓</span
                     >
                     <span v-else class="inactive">↕</span>
                   </span>
-                </div>
+              </div>
 
-                <div
+              <div
                   v-if="
                     header.column.getCanFilter() &&
                     ['title', 'description'].includes(header.column.id)
                   "
                   class="filter-wrapper"
-                >
-                  <input
+              >
+                <input
                     type="text"
                     :value="(header.column.getFilterValue() as string) ?? ''"
                     placeholder="Search..."
@@ -89,17 +118,17 @@ const { table, rows } = useAdvancementTable(advancements);
                         ($event.target as HTMLInputElement).value
                       )
                     "
-                  />
-                </div>
+                />
+              </div>
 
-                <div
+              <div
                   v-if="
                     header.column.getCanFilter() &&
                     ['tab', 'tier'].includes(header.column.id)
                   "
                   class="filter-wrapper"
-                >
-                  <BaseMultiSelect
+              >
+                <BaseMultiSelect
                     :options="
                       header.column.id === 'tab'
                         ? TAB_FILTER_OPTIONS
@@ -109,33 +138,36 @@ const { table, rows } = useAdvancementTable(advancements);
                       (header.column.getFilterValue() as string[]) ?? []
                     "
                     @update:model-value="header.column.setFilterValue($event)"
-                  />
-                </div>
+                />
               </div>
-            </th>
-          </tr>
+            </div>
+          </th>
+        </tr>
         </thead>
 
         <tbody>
-          <tr v-if="isLoading" class="status-row">
-            <td colspan="5">Loading advancements...</td>
-          </tr>
+        <tr v-if="isLoading" class="status-row">
+          <td colspan="5">Loading advancements...</td>
+        </tr>
 
-          <tr v-else-if="errorMessage" class="status-row error-row">
-            <td colspan="5">
-              <span>{{ errorMessage }}</span>
-              <button class="retry-btn" @click="fetchAdvancements(true)">
-                Retry
-              </button>
-            </td>
-          </tr>
+        <tr v-else-if="errorMessage" class="status-row error-row">
+          <td colspan="5">
+            <span>{{ errorMessage }}</span>
+            <button
+                class="retry-btn"
+                @click="fetchAdvancements(true, currentVersion)"
+            >
+              Retry
+            </button>
+          </td>
+        </tr>
 
-          <tr v-else-if="rows.length === 0" class="status-row">
-            <td colspan="5">No advancements match your filters.</td>
-          </tr>
+        <tr v-else-if="rows.length === 0" class="status-row">
+          <td colspan="5">No advancements match your filters.</td>
+        </tr>
 
-          <template v-else>
-            <tr
+        <template v-else>
+          <tr
               v-for="row in rows"
               :key="row.id"
               class="interactive-row"
@@ -147,22 +179,22 @@ const { table, rows } = useAdvancementTable(advancements);
                 backgroundImage: `linear-gradient(to right, ${row.original.tier.color}50 0%, transparent 30%)`,
               }"
               @click="selectAdvancement(row.original)"
-            >
-              <td v-for="cell in row.getAllCells()" :key="cell.id">
-                <FlexRender :cell="cell" />
-              </td>
-            </tr>
-          </template>
+          >
+            <td v-for="cell in row.getAllCells()" :key="cell.id">
+              <FlexRender :cell="cell" />
+            </td>
+          </tr>
+        </template>
         </tbody>
       </table>
     </div>
 
     <Transition name="slide">
       <AdvancementDetailDrawer
-        v-if="selectedAdvancement"
-        :advancement="selectedAdvancement"
-        @close="selectAdvancement(null)"
-        @select="selectAdvancement($event)"
+          v-if="selectedAdvancement"
+          :advancement="selectedAdvancement"
+          @close="selectAdvancement(null)"
+          @select="selectAdvancement($event)"
       />
     </Transition>
   </div>
