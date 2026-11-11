@@ -36,7 +36,18 @@ function selectVersion(version: string): void {
       :class="{ 'is-disabled': disabled }"
   >
     <summary class="dropdown-summary">
-      <span>v{{ modelValue }}</span>
+      <div class="summary-label">
+        <span class="current-value">v{{ modelValue }}</span>
+        <span
+            v-for="ver in versions"
+            :key="ver"
+            class="ghost-value"
+            aria-hidden="true"
+        >
+          v{{ ver }}
+        </span>
+      </div>
+
       <svg class="chevron" width="20" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
@@ -73,9 +84,12 @@ function selectVersion(version: string): void {
   color: var(--text-primary);
   list-style: none;
   user-select: none;
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
+  box-sizing: border-box;
+  width: 100%;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
@@ -83,7 +97,25 @@ function selectVersion(version: string): void {
   display: none;
 }
 
+.summary-label {
+  display: inline-grid;
+  grid-template-columns: 1fr;
+  text-align: left;
+}
+
+.summary-label > * {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+
+.ghost-value {
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
 .chevron {
+  flex-shrink: 0;
   opacity: 0.5;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
@@ -108,11 +140,12 @@ function selectVersion(version: string): void {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
+  width: 100%;
+  box-sizing: border-box;
   background: #18181b;
   border: 1px solid var(--glass-border);
   border-radius: 6px;
   padding: 0.3rem;
-  min-width: 82px;
   max-height: 220px;
   overflow-y: auto;
   display: flex;
@@ -125,6 +158,8 @@ function selectVersion(version: string): void {
 .dropdown-item {
   width: 100%;
   text-align: left;
+  white-space: nowrap;
+  box-sizing: border-box;
   background: transparent;
   border: none;
   font-size: 0.8rem;
