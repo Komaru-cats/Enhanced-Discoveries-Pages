@@ -69,9 +69,17 @@ async function main() {
 
     for (const filePath of versionFiles) {
         const relativeName = path.relative(DATA_DIR, filePath);
-        const rawData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        extractAssets(rawData, heads, items);
-        console.log(`Scanned ${relativeName}`);
+        const content = fs.readFileSync(filePath, 'utf-8');
+
+        try {
+            // Strip UTF-8 BOM if present, or remove .replace() if you just want to find and re-save the file
+            const rawData = JSON.parse(content.replace(/^\uFEFF/, ''));
+            extractAssets(rawData, heads, items);
+            console.log(`Scanned ${relativeName}`);
+        } catch (error) {
+            console.error(`Failed to parse JSON in: ${filePath}`);
+            throw error;
+        }
     }
 
     console.log(

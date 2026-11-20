@@ -3112,7 +3112,7 @@
           "id": "minecraft:crossbow",
           "count": 1,
           "title": "Multi-Crossbow",
-          "description": "Contains projectiles...\nUse only in extreme cases\nenchantment.minecraft.multishot",
+          "description": "Contains projectiles...\nUse only in extreme cases",
           "title_color": "#E3528A",
           "enchantments": {
             "multishot": 3
@@ -3992,7 +3992,7 @@
           "id": "minecraft:turtle_helmet",
           "count": 1,
           "title": "Sky High Hat",
-          "description": "You’ve risen above it all, literally\nitem.minecraft.smithing_template.upgrade",
+          "description": "You’ve risen above it all, literally",
           "title_color": "#94E1F4",
           "unbreakable": false
         }
@@ -4365,7 +4365,7 @@
           "id": "minecraft:ward_armor_trim_smithing_template",
           "count": 1,
           "title": "Warden's Plate",
-          "description": "Was taken out of the Warden\nenchantment.minecraft.sharpness",
+          "description": "Was taken out of the Warden",
           "title_color": "#243BC3",
           "enchantments": {
             "sharpness": 5
@@ -7916,7 +7916,7 @@
           "id": "minecraft:iron_shovel",
           "count": 1,
           "title": "The Undertaker's Shovel",
-          "description": "Use it to bury all your enemies\nenchantment.minecraft.sharpness",
+          "description": "Use it to bury all your enemies",
           "title_color": "#DDD9DA",
           "enchantments": {
             "sharpness": 1
@@ -9472,7 +9472,7 @@
           "id": "minecraft:golden_pickaxe",
           "count": 1,
           "title": "Golden Infused Pickaxe",
-          "description": "The master who created it put all his\nefforts into efficiency\nenchantment.minecraft.efficiency",
+          "description": "The master who created it put all his\nefforts into efficiency",
           "title_color": "#F6FFBC",
           "enchantments": {
             "efficiency": 6
@@ -9813,7 +9813,7 @@
           "id": "minecraft:fishing_rod",
           "count": 1,
           "title": "Professional Fishing Rod",
-          "description": "For real Masters\nenchantment.minecraft.mending\nenchantment.minecraft.luck_of_the_sea\nenchantment.minecraft.lure\nenchantment.minecraft.unbreaking",
+          "description": "For real Masters",
           "title_color": "#BFB773",
           "enchantments": {
             "mending": 1,
@@ -11181,7 +11181,7 @@
           "id": "minecraft:iron_axe",
           "count": 1,
           "title": "Iron Ax",
-          "description": "Heavier than a regular axe\nenchantment.minecraft.sharpness",
+          "description": "Heavier than a regular axe",
           "title_color": "#CFD4D7",
           "enchantments": {
             "sharpness": 5
@@ -11512,7 +11512,7 @@
           "id": "minecraft:diamond_sword",
           "count": 1,
           "title": "Excalibur",
-          "description": "The original\nenchantment.minecraft.sharpness",
+          "description": "The original",
           "title_color": "#FCA02F",
           "enchantments": {
             "sharpness": 5
